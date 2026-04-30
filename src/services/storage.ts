@@ -43,9 +43,14 @@ export function saveProgress(topicId: string, data: Partial<ProgressData>): void
   safeSet(`progress_${topicId}`, { ...current, ...data });
 }
 
+const CACHE_VERSION = 'v3';
+
 export function getCachedContent(topicId: string): string | null {
   try {
-    return localStorage.getItem(`content_${topicId}`);
+    // Remove old version caches
+    localStorage.removeItem(`content_${topicId}`);
+    localStorage.removeItem(`content_v2_${topicId}`);
+    return localStorage.getItem(`content_${CACHE_VERSION}_${topicId}`);
   } catch {
     return null;
   }
@@ -53,14 +58,14 @@ export function getCachedContent(topicId: string): string | null {
 
 export function saveCachedContent(topicId: string, content: string): void {
   try {
-    localStorage.setItem(`content_${topicId}`, content);
+    localStorage.setItem(`content_${CACHE_VERSION}_${topicId}`, content);
   } catch {
     // storage full
   }
 }
 
 export function clearCachedContent(topicId: string): void {
-  localStorage.removeItem(`content_${topicId}`);
+  localStorage.removeItem(`content_${CACHE_VERSION}_${topicId}`);
 }
 
 export function getChatHistory(topicId: string): ChatMessage[] {
