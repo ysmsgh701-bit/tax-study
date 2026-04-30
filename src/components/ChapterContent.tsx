@@ -17,6 +17,8 @@ const LOADING_MESSAGES = [
   '예제 문제를 만들고 있습니다...',
   '핵심 포인트를 정리하고 있습니다...',
   '시험 함정 포인트를 분석하고 있습니다...',
+  'AI 서버가 바쁩니다. 자동으로 재시도 중...',
+  '조금만 기다려주세요...',
 ];
 
 export default function ChapterContent({ topic, onComplete }: Props) {
