@@ -15,29 +15,34 @@ interface ParsedContent {
 }
 
 function parseContent(raw: string): ParsedContent {
-  const split = (marker: string) => {
-    const idx = raw.indexOf(marker);
-    return idx !== -1 ? idx : -1;
-  };
+  const positions = [
+    raw.indexOf('===SECTION1==='),
+    raw.indexOf('===SECTION2==='),
+    raw.indexOf('===SECTION3==='),
+    raw.indexOf('===SECTION4==='),
+  ];
 
-  const s1Start = split('===SECTION1===');
-  const s2Start = split('===SECTION2===');
-  const s3Start = split('===SECTION3===');
-  const s4Start = split('===SECTION4===');
-
-  if (s1Start === -1) {
+  if (positions[0] === -1) {
     return { section1: raw, section2: '', section3: [], section4: '' };
   }
 
-  const extract = (from: number, to: number) => {
-    const start = raw.indexOf('\n', from) + 1;
-    const end = to === -1 ? raw.length : to;
-    return raw.slice(start, end).trim();
+  // Extract content between two marker positions; returns '' if start marker missing
+  const extract = (fromIdx: number, toIdx: number): string => {
+    const from = positions[fromIdx];
+    if (from === -1) return '';
+    const lineEnd = raw.indexOf('\n', from);
+    const contentStart = lineEnd === -1 ? from : lineEnd + 1;
+    // Find the nearest next valid marker as the end boundary
+    let contentEnd = raw.length;
+    for (let i = toIdx; i < positions.length; i++) {
+      if (positions[i] !== -1) { contentEnd = positions[i]; break; }
+    }
+    return raw.slice(contentStart, contentEnd).trim();
   };
 
-  const sec1 = extract(s1Start, s2Start);
-  const sec2 = extract(s2Start, s3Start);
-  const sec3Raw = extract(s3Start, s4Start);
+  const sec1 = extract(0, 1);
+  const sec2 = extract(1, 2);
+  const sec3Raw = extract(2, 3);
   const sec4 = extract(s4Start, -1);
 
   let examples: Example[] = [];
