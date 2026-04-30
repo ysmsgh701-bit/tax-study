@@ -43,13 +43,12 @@ export function saveProgress(topicId: string, data: Partial<ProgressData>): void
   safeSet(`progress_${topicId}`, { ...current, ...data });
 }
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 
 export function getCachedContent(topicId: string): string | null {
   try {
-    // Remove old version caches
-    localStorage.removeItem(`content_${topicId}`);
-    localStorage.removeItem(`content_v2_${topicId}`);
+    // Remove all old version caches
+    ['', 'v2_', 'v3_'].forEach(v => localStorage.removeItem(`content_${v}${topicId}`));
     return localStorage.getItem(`content_${CACHE_VERSION}_${topicId}`);
   } catch {
     return null;
