@@ -14,11 +14,13 @@ async function throwWithBody(response: Response): Promise<never> {
   throw new Error(`Gemini API ${response.status}: ${body}`);
 }
 
-// JSON 구조화 응답 (챕터 콘텐츠 생성용)
 export async function callClaudeJSON<T>(
   systemPrompt: string,
   userMessage: string
 ): Promise<T> {
+  console.log('[callClaudeJSON] API_KEY exists:', !!API_KEY);
+  console.log('[callClaudeJSON] userMessage:', userMessage);
+
   const response = await fetch(
     `${BASE_URL}:generateContent?key=${API_KEY}`,
     {
@@ -38,11 +40,18 @@ export async function callClaudeJSON<T>(
   if (!response.ok) await throwWithBody(response);
 
   const data = await response.json();
+  console.log('[callClaudeJSON] raw response:', JSON.stringify(data).slice(0, 300));
+
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-  return JSON.parse(text) as T;
+
+  try {
+    return JSON.parse(text) as T;
+  } catch (e) {
+    console.error('[callClaudeJSON] JSON parse failed. raw text:', text.slice(0, 500));
+    throw new Error('AI 응답을 파싱하는데 실패했습니다. 다시 시도해주세요.');
+  }
 }
 
-// 일반 텍스트 응답 (채팅용)
 export async function callClaude(
   systemPrompt: string,
   messages: Message[]
@@ -71,7 +80,6 @@ export async function callClaude(
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
-// 스트리밍 (현재 미사용, 호환성 유지)
 export async function streamClaude(
   systemPrompt: string,
   messages: Message[],
